@@ -48,9 +48,9 @@ export const formSchema = z
           message: "잘못된 값이 입력되었습니다.",
         }
       ),
-    companyName: z.string().optional(),
-    employeeCount: z.number().optional(),
-    dayofbirth: z.date({ required_error: "생년월일을 입력해주세요." }),
+    companyName: z.string().nullable(),
+    employeeCount: z.number().nullable(),
+    dayofbirth: z.date().nullable(),
   })
   .superRefine((data, ctx) => {
     if (data.accountType === "company" && !data.companyName) {
@@ -78,9 +78,9 @@ export default function Page() {
     defaultValues: {
       email: "",
       accountType: "",
-      companyName: "",
-      employeeCount: 0,
-      dayofbirth: undefined,
+      companyName: null, // "" 대신 undefined
+      employeeCount: null, // 0 대신 undefined
+      dayofbirth: null,
     },
 
     resolver: zodResolver(formSchema),
@@ -183,8 +183,8 @@ export default function Page() {
                         >
                           <Calendar
                             mode="single"
-                            defaultMonth={field.value}
-                            selected={field.value}
+                            defaultMonth={field.value || undefined}
+                            selected={field.value || undefined}
                             onSelect={field.onChange}
                             className="rounded-md border"
                             fixedWeeks //주마다 6주로 고정

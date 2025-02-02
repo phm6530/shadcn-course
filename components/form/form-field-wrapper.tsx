@@ -25,7 +25,10 @@ export default function FormFieldWrapper({
   fieldDescription?: string;
   fieldType?: HTMLInputTypeAttribute;
 }) {
-  const { control } = useFormContext();
+  const { control, watch } = useFormContext();
+
+  const test = watch(fieldName);
+  console.log("test:", test);
 
   return (
     <FormField
@@ -36,7 +39,21 @@ export default function FormFieldWrapper({
           <FormItem>
             <FormLabel>{fieldLabel}</FormLabel>
             <FormControl>
-              <Input {...field} type={fieldType} />
+              <Input
+                {...field}
+                onChange={(e) => {
+                  if (fieldType === "number") {
+                    const value = e.target.value;
+                    const numberValue = parseInt(value);
+                    if (!isNaN(numberValue)) {
+                      field.onChange(numberValue);
+                    }
+                  } else {
+                    field.onChange(e.target.value);
+                  }
+                }}
+                type={fieldType}
+              />
             </FormControl>
             {fieldDescription && (
               <FormDescription>{fieldDescription}</FormDescription>
