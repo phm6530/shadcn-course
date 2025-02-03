@@ -9,9 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -36,6 +38,15 @@ import { z } from "zod";
 
 const AccountTypes = ["personal", "company"] as const;
 
+/**
+ * Zod 에서는
+ * 스키마에서 유효성 검사가 실패할 경우,
+ * superRefine의 유효성 검사를 수행하지 않을 수 있다.
+ *
+ * 이를 해결 하기 위해 단일 스키마로 분리하여 superRefine을 사용해야한다.
+ * 지금 코드는 문제가 없다.
+ *
+ */
 export const formSchema = z
   .object({
     email: z.string().email("이메일 형식이 아닙니다."),
@@ -51,8 +62,30 @@ export const formSchema = z
     companyName: z.string().nullable(),
     employeeCount: z.number().nullable(),
     dayofbirth: z.date().nullable(),
+    password: z
+      .string()
+      .min(8, "8자 이상 입력해주세요.")
+      .refine(
+        (val) => {
+          const reg = /^(?=.*[a-zA-Z])(?=.*[0-9]).{8,25}$/;
+          return reg.test(val);
+        },
+        { message: "영문, 숫자를 포함한 8자 이상 입력해주세요." }
+      ),
+    passwordConfirm: z.string(),
+    agree: z.coerce.boolean().refine((val) => val === true, {
+      message: "필수 동의 사항입니다.",
+    }),
   })
   .superRefine((data, ctx) => {
+    if (data.password !== data.passwordConfirm) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "비밀번호가 일치하지 않습니다.",
+        path: ["passwordConfirm"],
+      });
+    }
+
     if (data.accountType === "company" && !data.companyName) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -71,6 +104,25 @@ export const formSchema = z
         path: ["employeeCount"],
       });
     }
+
+    const today = new Date();
+    const userBirsh = data?.dayofbirth?.getFullYear();
+    if (!userBirsh) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "생년월일을 입력해주세요.",
+        path: ["dayofbirth"],
+      });
+      return;
+    }
+    const isAdult = today.getFullYear() - userBirsh >= 18;
+    if (!isAdult) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "만 18세 이상만 가입 가능합니다.",
+        path: ["dayofbirth"],
+      });
+    }
   });
 
 export default function Page() {
@@ -78,19 +130,22 @@ export default function Page() {
     defaultValues: {
       email: "",
       accountType: "",
-      companyName: null, // "" 대신 undefined
-      employeeCount: null, // 0 대신 undefined
+      companyName: "", // "" 대신 undefined
+      employeeCount: 0, // 0 대신 undefined
       dayofbirth: null,
+      password: "",
+      passwordConfirm: "",
     },
 
     resolver: zodResolver(formSchema),
   });
 
   const isTypeCompany = formMethod.watch("accountType");
-
   const onSignupHandler = (data: z.infer<typeof formSchema>) => {
     console.log(data);
   };
+
+  console.log(formMethod.watch());
 
   return (
     <>
@@ -186,7 +241,7 @@ export default function Page() {
                             defaultMonth={field.value || undefined}
                             selected={field.value || undefined}
                             onSelect={field.onChange}
-                            className="rounded-md border"
+                            className="rounded-md border flex"
                             fixedWeeks //주마다 6주로 고정
                             weekStartsOn={0} //일주일 시작 요일
                             toDate={new Date()}
@@ -197,6 +252,47 @@ export default function Page() {
                         </PopoverContent>
                       </Popover>
                       <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+
+              <FormFieldWrapper
+                fieldLabel={"비밀번호"}
+                fieldName={"password"}
+                fieldType="password"
+                placeholder="8자 이상 입력해주세요."
+              />
+
+              <FormFieldWrapper
+                fieldLabel={"비밀번호 확인"}
+                fieldName={"passwordConfirm"}
+                fieldType="password"
+                placeholder="8자 이상 입력해주세요."
+              />
+
+              <FormField
+                name="agree"
+                render={({ field }) => {
+                  return (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>
+                          Use different settings for my mobile devices
+                        </FormLabel>
+                        <FormDescription>
+                          You can manage your mobile notifications in the{" "}
+                          {/* <Link href="/examples/forms">mobile settings</Link>{" "} */}
+                          page.
+                        </FormDescription>
+                        <FormMessage />
+                      </div>
                     </FormItem>
                   );
                 }}

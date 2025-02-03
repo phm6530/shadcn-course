@@ -12,23 +12,22 @@ import {
 import { Input } from "../ui/input";
 import { z } from "zod";
 import { formSchema } from "@/app/(logged-out)/sign-up/page";
-import { HTMLInputTypeAttribute } from "react";
+import { HTMLInputTypeAttribute, InputHTMLAttributes } from "react";
+import { PasswordInput } from "../ui/input-password";
 
 export default function FormFieldWrapper({
   fieldLabel,
   fieldName,
   fieldDescription,
   fieldType = "text", // Default
+  ...rest
 }: {
   fieldLabel: string;
   fieldName: keyof z.infer<typeof formSchema>;
   fieldDescription?: string;
   fieldType?: HTMLInputTypeAttribute;
-}) {
-  const { control, watch } = useFormContext();
-
-  const test = watch(fieldName);
-  console.log("test:", test);
+} & InputHTMLAttributes<HTMLInputElement>) {
+  const { control } = useFormContext();
 
   return (
     <FormField
@@ -39,21 +38,26 @@ export default function FormFieldWrapper({
           <FormItem>
             <FormLabel>{fieldLabel}</FormLabel>
             <FormControl>
-              <Input
-                {...field}
-                onChange={(e) => {
-                  if (fieldType === "number") {
-                    const value = e.target.value;
-                    const numberValue = parseInt(value);
-                    if (!isNaN(numberValue)) {
-                      field.onChange(numberValue);
+              {fieldType === "password" ? (
+                <PasswordInput {...field} {...rest} />
+              ) : (
+                <Input
+                  {...rest}
+                  {...field}
+                  onChange={(e) => {
+                    if (fieldType === "number") {
+                      const value = e.target.value;
+                      const numberValue = parseInt(value);
+                      if (!isNaN(numberValue)) {
+                        field.onChange(numberValue);
+                      }
+                    } else {
+                      field.onChange(e.target.value);
                     }
-                  } else {
-                    field.onChange(e.target.value);
-                  }
-                }}
-                type={fieldType}
-              />
+                  }}
+                  type={fieldType}
+                />
+              )}
             </FormControl>
             {fieldDescription && (
               <FormDescription>{fieldDescription}</FormDescription>
