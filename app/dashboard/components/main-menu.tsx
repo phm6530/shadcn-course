@@ -3,6 +3,7 @@ import MenuItem from "./menu-item";
 import MenuTitle from "./menu-title";
 import Link from "next/link";
 import ThemeToggle from "@/components/ui/theme-toggle";
+import { cn } from "@/lib/utils";
 
 const paths: { label: string; href: string }[] = [
   {
@@ -19,9 +20,14 @@ const paths: { label: string; href: string }[] = [
   },
 ];
 
-export default function MainMenu() {
+export default function MainMenu({ className }: { className?: string }) {
   return (
-    <div className="h-screen dark:bg-zinc-900 p-4 flex flex-col bg-zinc-100">
+    <div
+      className={cn(
+        "  h-screen dark:bg-zinc-900 p-4 flex flex-col bg-zinc-100",
+        className
+      )}
+    >
       <div className="border-b dark:border-b-black border-zinc-300 pb-4">
         <MenuTitle />
       </div>
