@@ -11,8 +11,8 @@ const paths: { label: string; href: string }[] = [
     href: "/dashboard",
   },
   {
-    label: "Teams",
-    href: "/temas",
+    label: "employees",
+    href: "/dashboard/employees",
   },
   {
     label: "Teams",
