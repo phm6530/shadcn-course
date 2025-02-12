@@ -97,7 +97,7 @@ export default function Page() {
       <PersonStandingIcon size={40} className="mb-5" />
       <Card className="max-w-sm w-full ">
         <CardHeader>
-          <CardTitle>Sign up</CardTitle>
+          <CardTitle></CardTitle>
           <CardDescription>Sign up to your supportMe account..</CardDescription>
         </CardHeader>
         <CardContent>

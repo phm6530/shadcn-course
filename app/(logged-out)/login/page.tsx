@@ -38,6 +38,8 @@ export default function Login({
 }: {
   searchParams: searchParams;
 }) {
+  console.log(searchParams);
+
   const formMethod = useForm<z.infer<typeof schema>>({
     defaultValues: {
       email: "",

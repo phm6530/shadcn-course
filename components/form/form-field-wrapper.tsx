@@ -36,7 +36,7 @@ export default function FormFieldWrapper({
           <FormItem>
             <FormLabel>{fieldLabel}</FormLabel>
             <FormControl>
-              <Input {...field} type={fieldType} />
+              <Input {...field} autoComplete="off" type={fieldType} />
             </FormControl>
             {fieldDescription && (
               <FormDescription>{fieldDescription}</FormDescription>
